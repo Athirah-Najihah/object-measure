@@ -1,7 +1,7 @@
 # object-measure
 
 ## Object Measurement Using ChArUco Boards
-<br><br>🔗 Here is the website I refer **[Detection of ChArUco Boards](https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html)**
+<br>🔗 Here is the website I refer **[Detection of ChArUco Boards](https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html)**
 
 This project aims to measure real-world objects using a ChArUco board for calibration. It currently requires a fixed camera angle and the presence of a real object within the same frame to accurately convert pixel measurements to real-world units (meters/centimeters).
 
