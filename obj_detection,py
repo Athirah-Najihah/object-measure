@@ -1,0 +1,64 @@
+import cv2
+import numpy as np
+
+# Constants
+thres = 0.5 
+nms_threshold = 0.2 
+
+# Load class names
+classNames = []
+classFile = 'coco.names'
+with open(classFile, 'rt') as f:
+    classNames = f.read().rstrip('\n').split('\n')
+
+# Load pre-trained model
+configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+weightsPath = 'frozen_inference_graph.pb'
+
+net = cv2.dnn_DetectionModel(weightsPath, configPath)
+net.setInputSize(320, 320)
+net.setInputScale(1.0/127.5)
+net.setInputMean((127.5, 127.5, 127.5))
+net.setInputSwapRB(True)
+
+def detect_obstacles(img):
+    classIds, confs, bbox = net.detect(img, confThreshold=thres)
+    bbox = list(bbox)
+    confs = list(np.array(confs).reshape(1, -1)[0])
+    confs = list(map(float, confs))
+
+    indices = cv2.dnn.NMSBoxes(bbox, confs, thres, nms_threshold)
+    detected_objects = []
+
+    for i in indices:
+        box = bbox[i]
+        x, y, w, h = box[0], box[1], box[2], box[3]
+
+        box_width = w
+        box_height = h
+        detected_object = classNames[classIds[i]-1].upper()
+        annotation_text = f"{detected_object} ({box_width}px x {box_height}px)"
+
+        cv2.rectangle(img, (x, y), (x + w, y + h), color=(0, 255, 0), thickness=2)
+        cv2.putText(img, annotation_text, (x + 10, y + 30),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+
+    return detected_objects, img
+
+# Initialize video capture
+cap = cv2.VideoCapture(1)  # Set camera index to 1
+
+while True:
+    success, img = cap.read()
+    if not success:
+        break
+
+    detected_objects, img = detect_obstacles(img)
+
+    cv2.imshow('Object Detection', img)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
